@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>서재</title>
+<style>
+:root{--bg:#fff;--surface:#fff;--ink:#111;--mute:#6b6b6b;--line:#e3e3e3;--accent:#000;--accent-ink:#fff;--mark:#e4e4e4;--markon:#000;--tint:#f2f2f2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--fs:18px;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+[hidden]{display:none!important}
+.view{height:100%;display:flex;flex-direction:column;min-height:0}
+button,.btn,select,input{font:inherit;color:inherit}
+button,.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;line-height:1.3}
+button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.p{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;display:inline-block}
+input[type=search],select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0}
+#lib{overflow:auto}
+#lib>*{width:100%;max-width:640px;margin-left:auto;margin-right:auto}
+#lib header{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 12px}
+h1{margin:0;font-size:24px;line-height:1.2;font-weight:700}
+#resume{padding:0 16px}
+.resume{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;background:var(--tint);border-color:var(--accent);padding:12px 14px;margin-bottom:8px}
+.resume small,.nm small{color:var(--mute)}
+#list{list-style:none;margin:0;padding:0 8px}
+#list li{position:relative;display:flex;align-items:center;border-bottom:1px solid var(--line)}
+#list li::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:var(--p,0);background:var(--accent)}
+.row{flex:1;min-width:0;display:flex;gap:12px;align-items:center;text-align:left;border:0;background:none;padding:12px 8px}
+.nm{min-width:0;display:flex;flex-direction:column}
+.nm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.thumb,.ico{width:48px;height:48px;border-radius:6px;flex:none}
+.thumb{object-fit:cover}
+.ico{display:grid;place-items:center;background:var(--tint);color:var(--accent);font-size:18px;font-weight:700}
+.del{border:0;background:none;color:var(--mute);font-size:14px}
+#empty{padding:40px 24px;text-align:center;color:var(--mute);line-height:1.7}
+.bar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--bg)}
+#ttl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+#pg{color:var(--mute);font-variant-numeric:tabular-nums}
+#det,#cnt{color:var(--mute);font-size:14px;white-space:nowrap}
+#q{flex:1;font-size:16px}
+#rd.img .tools{display:none}
+#rd.nobar .bar{display:none}
+#sb{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;z-index:5;opacity:.9;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+#sc{flex:1;min-height:0;overflow:auto;background:var(--surface)}
+#body.txt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:var(--fs);line-height:1.85;max-width:40em;margin:0 auto;padding:24px 20px 80px}
+#body.imgbox{padding:12px;text-align:center}
+#body.imgbox img{max-width:100%;height:auto;border-radius:6px}
+mark{background:var(--mark);color:inherit;border-radius:3px}
+mark.on{background:var(--markon);color:#fff}
+#pw{display:flex;gap:8px;width:calc(100% - 32px);margin-bottom:8px}
+#upl{display:flex;gap:8px;align-items:center;justify-content:space-between;width:calc(100% - 32px);margin-bottom:8px;padding:10px 12px;background:var(--tint);border-radius:8px;font-size:14px}
+#upt{min-width:0;overflow-wrap:anywhere}
+#pw input{flex:1;min-width:0;font-size:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+#msg{width:calc(100% - 32px);margin-top:0;margin-bottom:8px;padding:10px 12px;background:var(--tint);border-radius:8px;font-size:14px}
+</style>
+</head>
+<body>
+<div id="lib" class="view">
+  <header>
+    <h1>서재</h1>
+    <span style="display:flex;gap:8px"><button id="rf" aria-label="새로고침">↻</button><button class="btn p" id="addb">파일 추가</button></span>
+    <input id="f" type="file" multiple hidden>
+  </header>
+  <div id="resume"></div>
+  <p id="msg" hidden></p>
+  <div id="pw" hidden><input id="pwi" type="password" placeholder="올리기 비밀번호" autocomplete="off"><button class="btn p" id="pwb">확인</button></div>
+  <div id="upl" hidden><span id="upt"></span><button id="upc">취소</button></div>
+  <ul id="list"></ul>
+  <p id="empty" hidden>아직 올라온 파일이 없어요.<br>텍스트 파일(.txt)이나 사진을 추가해 보세요.<br>올린 파일은 이 페이지를 여는 모든 사람에게 보여요.</p>
+</div>
+
+<div id="rd" class="view" hidden>
+  <div class="bar"><button id="back">‹ 목록</button><span id="ttl"></span><span id="pg"></span><button id="hb">숨기기</button></div>
+  <div class="bar tools">
+    <select id="enc" aria-label="인코딩">
+      <option value="auto">자동 감지</option>
+      <option value="utf-8">UTF-8</option>
+      <option value="euc-kr">한글 EUC-KR / CP949</option>
+      <option value="utf-16le">UTF-16 LE</option>
+      <option value="utf-16be">UTF-16 BE</option>
+      <option value="shift_jis">일본어 Shift_JIS</option>
+      <option value="gbk">중국어 GBK</option>
+      <option value="big5">중국어 Big5</option>
+    </select>
+    <span id="det"></span>
+    <span style="flex:1"></span>
+    <button id="fm" aria-label="글자 작게">가-</button>
+    <button id="fp" aria-label="글자 크게">가+</button>
+  </div>
+  <div class="bar tools">
+    <input id="q" type="search" placeholder="본문에서 검색" autocomplete="off">
+    <span id="cnt"></span>
+    <button id="up" aria-label="이전 결과">▲</button>
+    <button id="dn" aria-label="다음 결과">▼</button>
+  </div>
+  <div id="sc"><article id="body"></article></div>
+  <button id="sb" hidden>메뉴</button>
+</div>
+
+<script>
+/* ===== 설정: Supabase > Project Settings > API 에서 복사해 붙여 넣으세요 ===== */
+const SUPABASE_URL = 'https://zvkwfiyscestsqxnwclc.supabase.co';   // 예: https://abcdxyz.supabase.co
+const SUPABASE_KEY = 'sb_publishable_Umy7mKcL_boN5WW65ZAkNQ_bQciL1CA';   // anon public 키 (또는 publishable 키)
+/* ======================================================================= */
+
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const h=(t,p={},...c)=>{const e=document.createElement(t);Object.assign(e,p);e.append(...c);return e};
+const fmt=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+const mem={};
+const ls={
+  get(k){try{const v=localStorage.getItem(k);return v===null?mem[k]:v}catch(e){return mem[k]}},
+  set(k,v){mem[k]=v;try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){delete mem[k];try{localStorage.removeItem(k)}catch(e){}}
+};
+
+/* 서버 */
+const READY=!!(SUPABASE_URL&&SUPABASE_KEY);
+async function api(path,opt={}){
+  const hd={apikey:SUPABASE_KEY,'Content-Type':'application/json'};
+  if(SUPABASE_KEY.startsWith('eyJ'))hd.Authorization='Bearer '+SUPABASE_KEY;
+  const r=await fetch(SUPABASE_URL.replace(/\/+$/,'')+'/rest/v1/'+path,{...opt,headers:hd});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+  if(!r.ok)throw new Error(j&&j.message||('HTTP '+r.status));
+  return j;
+}
+const rpc=(fn,args)=>api('rpc/'+fn,{method:'POST',body:JSON.stringify(args)});
+const PWERR=e=>/bad password/.test(e&&e.message||'');
+
+/* 인코딩 */
+function decode(buf,enc){
+  const u=new Uint8Array(buf);
+  if(enc==='auto'){
+    if(u[0]===0xEF&&u[1]===0xBB&&u[2]===0xBF)enc='utf-8';
+    else if(u[0]===0xFF&&u[1]===0xFE)enc='utf-16le';
+    else if(u[0]===0xFE&&u[1]===0xFF)enc='utf-16be';
+    else{try{return{t:new TextDecoder('utf-8',{fatal:true}).decode(u),used:'utf-8'}}catch(e){enc='euc-kr'}}
+  }
+  return{t:new TextDecoder(enc).decode(u),used:enc};
+}
+
+/* 서재 */
+let files=[],cur=null,text='',buf=null,marks=[],mi=0,timer,st,loaded=false,imgUrl=null;
+const msg=t=>{const m=$('#msg');m.textContent=t;m.hidden=!t};
+function showLib(){$('#rd').hidden=true;$('#lib').hidden=false;drawLib();refresh()}
+function drawLib(){
+  const ul=$('#list');ul.innerHTML='';
+  $('#empty').hidden=!loaded||files.length>0;
+  files.forEach(f=>{
+    const li=h('li');
+    const pct=Math.round((+ls.get('pos:'+f.id)||0)*100);
+    const lead=h('span',{className:'ico'},f.kind==='img'?'사진':'글');
+    if(f.kind==='img')lead.style.fontSize='13px';
+    const row=h('button',{className:'row',onclick:()=>openFile(f)});
+    row.append(lead,h('span',{className:'nm'},h('b',{},f.name),h('small',{},fmt(f.size)+(f.kind==='txt'?' · '+pct+'% 읽음':''))));
+    if(f.kind==='txt')li.style.setProperty('--p',pct+'%');
+    li.append(row);
+    const d=h('button',{className:'del'},'삭제');let armed=0;
+    d.onclick=()=>{
+      if(!armed){armed=1;d.textContent='정말 삭제';setTimeout(()=>{armed=0;d.textContent='삭제'},3000);return}
+      withPw(async pw=>{
+        try{await rpc('del_file',{p_pw:pw,p_file:f.id});ls.del('pos:'+f.id);ls.del('enc:'+f.id);if(ls.get('last')===f.id)ls.del('last');msg('');refresh()}
+        catch(e){if(PWERR(e)){lockPw();msg('비밀번호가 바뀌었어요. 다시 입력해 주세요.')}else msg('삭제하지 못했어요: '+e.message)}
+      });
+    };
+    li.append(d);
+    ul.append(li);
+  });
+  const r=$('#resume');r.innerHTML='';
+  const last=files.find(f=>f.id===ls.get('last')&&f.kind==='txt');
+  if(last){
+    const p=Math.round((+ls.get('pos:'+last.id)||0)*100);
+    r.append(h('button',{className:'resume',onclick:()=>openFile(last)},h('small',{},'이어 읽기'),h('b',{},last.name),h('small',{},p+'% 지점부터')));
+  }
+}
+let busy=false;
+async function refresh(){
+  if(!READY){loaded=true;msg('아직 서버가 연결되지 않았어요. 이 파일의 SUPABASE_URL과 SUPABASE_KEY를 채워 주세요.');drawLib();return}
+  if(busy)return;busy=true;
+  try{files=await api('files?select=id,name,kind,mime,size,parts,added&order=added.desc');loaded=true;if($('#msg').textContent.startsWith('불러오지'))msg('')}
+  catch(e){loaded=true;msg('불러오지 못했어요. 잠시 뒤 ↻ 를 눌러 주세요.')}
+  busy=false;
+  if(!$('#lib').hidden)drawLib();
+}
+setInterval(()=>{if(!document.hidden&&!$('#lib').hidden)refresh()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('#lib').hidden)refresh()});
+$('#rf').onclick=refresh;
+
+/* 파일 읽기: 1MB 조각(base64)을 순서대로 받아 원본 바이트로 */
+const MB=1048576,CH=MB;
+const b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]||'');r.onerror=()=>rej(r.error);r.readAsDataURL(blob)});
+const unb64=s=>{const bin=atob(s),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u};
+async function loadBuf(f){
+  const rows=await api('chunks?select=data&file_id=eq.'+encodeURIComponent(f.id)+'&order=idx.asc');
+  if(!rows||rows.length!==f.parts)throw new Error('incomplete');
+  const parts=rows.map(r=>unb64(r.data));
+  const out=new Uint8Array(parts.reduce((a,p)=>a+p.length,0));let o=0;
+  for(const p of parts){out.set(p,o);o+=p.length}
+  return out.buffer;
+}
+
+/* 올리기 */
+let CANCEL=false;
+const up=t=>{$('#upl').hidden=!t;$('#upt').textContent=t};
+async function add(list,pw){
+  CANCEL=false;
+  for(const file of list){
+    const img=file.type.startsWith('image/')||/\.(jpe?g|png|gif|webp|bmp|avif)$/i.test(file.name);
+    if(img&&file.size>10*MB){msg('"'+file.name+'": 사진은 10MB까지만 올릴 수 있어요.');continue}
+    if(!img&&file.size>30*MB){msg('"'+file.name+'": 텍스트는 30MB까지만 올릴 수 있어요.');continue}
+    const n=Math.max(1,Math.ceil(file.size/CH));let id=null;
+    try{
+      id=await rpc('new_file',{p_pw:pw,p_name:file.name.slice(0,200),p_kind:img?'img':'txt',p_mime:file.type||'',p_size:file.size,p_parts:n});
+      for(let k=0;k<n;k++){
+        if(CANCEL)throw 'cancel';
+        up('올리는 중… '+file.name+(n>1?' ('+(k+1)+'/'+n+')':''));
+        await rpc('put_chunk',{p_pw:pw,p_file:id,p_idx:k,p_data:await b64(file.slice(k*CH,(k+1)*CH))});
+      }
+      if(CANCEL)throw 'cancel';
+      await rpc('finish_file',{p_pw:pw,p_file:id});
+      msg('');
+    }catch(e){
+      if(id)rpc('del_file',{p_pw:pw,p_file:id}).catch(()=>{});
+      if(e==='cancel'){msg('"'+file.name+'" 올리기를 취소했어요.');break}
+      if(PWERR(e)){lockPw();msg('비밀번호가 맞지 않아요. 다시 입력해 주세요.');break}
+      msg('"'+file.name+'" 올리기 실패: '+(e&&e.message||'알 수 없는 오류'));
+    }
+  }
+  up('');refresh();
+}
+
+/* 비밀번호: 서버에서 확인하고, 맞으면 이 기기에 기억 */
+let PENDING=null;
+const lockPw=()=>ls.del('pw');
+function withPw(fn){const p=ls.get('pw');if(p)fn(p);else{PENDING=fn;$('#pw').hidden=false;$('#pwi').focus()}}
+async function tryPw(){
+  const v=$('#pwi').value;if(!v)return;
+  $('#pwb').disabled=true;
+  try{
+    const ok=await rpc('check_pw',{p_pw:v});
+    if(ok===true){ls.set('pw',v);$('#pw').hidden=true;$('#pwi').value='';msg('');const fn=PENDING;PENDING=null;if(fn)fn(v)}
+    else{msg('비밀번호가 맞지 않아요.');$('#pwi').select()}
+  }catch(e){msg('확인하지 못했어요: '+e.message)}
+  $('#pwb').disabled=false;
+}
+let PICK=null;
+$('#addb').onclick=()=>{if(!READY){refresh();return}withPw(pw=>{PICK=pw;$('#f').click()})};
+$('#f').onchange=e=>{const l=[...e.target.files];e.target.value='';if(l.length&&PICK)add(l,PICK)};
+$('#pwb').onclick=tryPw;
+$('#pwi').onkeydown=e=>{if(e.key==='Enter')tryPw()};
+$('#upc').onclick=()=>{CANCEL=true;$('#upt').textContent='취소하는 중…'};
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('drop',e=>{e.preventDefault();const l=e.dataTransfer&&[...e.dataTransfer.files];if(l&&l.length&&READY)withPw(pw=>add(l,pw))});
+
+/* 리더 */
+const ratio=()=>{const s=$('#sc'),m=s.scrollHeight-s.clientHeight;return m>0?s.scrollTop/m:0};
+const setRatio=r=>{const s=$('#sc');s.scrollTop=r*(s.scrollHeight-s.clientHeight)};
+const prog=()=>{$('#pg').textContent=cur&&cur.kind==='txt'?Math.round(ratio()*100)+'%':''};
+const save=()=>{if(cur&&cur.kind==='txt'&&!$('#rd').hidden&&!$('#q').value)ls.set('pos:'+cur.id,ratio().toFixed(5))};
+
+async function openFile(f){
+  cur=f;bars(false);
+  if(f.kind==='txt')ls.set('last',f.id);
+  $('#lib').hidden=true;$('#rd').hidden=false;$('#ttl').textContent=f.name;
+  $('#rd').classList.toggle('img',f.kind==='img');
+  const b=$('#body');b.innerHTML='';
+  $('#pg').textContent='불러오는 중…';
+  try{buf=await loadBuf(f)}catch(e){cur=null;showLib();msg('파일을 불러오지 못했어요.');return}
+  if(cur!==f)return;
+  if(f.kind==='img'){
+    if(imgUrl)URL.revokeObjectURL(imgUrl);
+    imgUrl=URL.createObjectURL(new Blob([buf],{type:f.mime||'image/jpeg'}));
+    b.className='imgbox';b.append(h('img',{src:imgUrl,alt:f.name,onclick:()=>bars(!$('#rd').classList.contains('nobar'))}));
+    $('#sc').scrollTop=0;$('#pg').textContent='';return;
+  }
+  b.className='txt';
+  $('#enc').value=ls.get('enc:'+f.id)||'auto';
+  $('#q').value='';
+  load(+ls.get('pos:'+f.id)||0);
+}
+function load(pos){
+  const enc=$('#enc').value,r=decode(buf,enc);
+  text=r.t;
+  $('#det').textContent=enc==='auto'?'감지: '+r.used.toUpperCase():'';
+  render();
+  if(!$('#q').value)requestAnimationFrame(()=>{setRatio(pos);prog()});
+}
+function render(){
+  const q=$('#q').value,b=$('#body'),pos=[];marks=[];
+  if(!q){b.textContent=text;$('#cnt').textContent='';return}
+  const lo=text.toLowerCase(),ql=q.toLowerCase(),out=[];let last=0,i;
+  while(pos.length<5000&&(i=lo.indexOf(ql,last))>-1){
+    out.push(esc(text.slice(last,i)),'<mark>',esc(text.slice(i,i+ql.length)),'</mark>');
+    pos.push(i);last=i+ql.length;
+  }
+  out.push(esc(text.slice(last)));
+  b.innerHTML=out.join('');
+  marks=b.querySelectorAll('mark');
+  go(0);
+}
+function go(n){
+  if(!marks.length){$('#cnt').textContent=$('#q').value?'결과 없음':'';return}
+  mi=(n+marks.length)%marks.length;
+  marks.forEach(m=>m.classList.remove('on'));
+  const m=marks[mi];m.classList.add('on');m.scrollIntoView({block:'center'});
+  $('#cnt').textContent=(mi+1)+' / '+marks.length+(marks.length>=5000?'+':'');
+}
+$('#q').oninput=()=>{
+  clearTimeout(st);
+  st=setTimeout(()=>{
+    if(!cur||cur.kind!=='txt')return;
+    render();
+    if(!$('#q').value)requestAnimationFrame(()=>{setRatio(+ls.get('pos:'+cur.id)||0);prog()});
+  },200);
+};
+$('#q').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go(mi+(e.shiftKey?-1:1))}};
+$('#up').onclick=()=>go(mi-1);
+$('#dn').onclick=()=>go(mi+1);
+$('#enc').onchange=()=>{ls.set('enc:'+cur.id,$('#enc').value);load(ratio())};
+function fs(d){
+  const r=ratio(),v=Math.min(30,Math.max(14,(+ls.get('fs')||18)+d));
+  ls.set('fs',v);document.documentElement.style.setProperty('--fs',v+'px');
+  requestAnimationFrame(()=>setRatio(r));
+}
+function bars(hide){
+  const rd=$('#rd');if(rd.classList.contains('nobar')===hide)return;
+  const t=cur&&cur.kind==='txt',r=t?ratio():0;
+  rd.classList.toggle('nobar',hide);$('#sb').hidden=!hide;
+  if(t)requestAnimationFrame(()=>{setRatio(r);prog()});
+}
+$('#hb').onclick=()=>bars(true);
+$('#sb').onclick=()=>bars(false);
+$('#fm').onclick=()=>fs(-2);
+$('#fp').onclick=()=>fs(2);
+$('#sc').onscroll=()=>{if(!cur||cur.kind!=='txt')return;prog();clearTimeout(timer);timer=setTimeout(save,300)};
+$('#back').onclick=()=>{save();cur=null;buf=null;if(imgUrl){URL.revokeObjectURL(imgUrl);imgUrl=null}bars(false);showLib()};
+addEventListener('pagehide',save);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+
+document.documentElement.style.setProperty('--fs',(+ls.get('fs')||18)+'px');
+showLib();
+</script>
+</body>
+</html>
